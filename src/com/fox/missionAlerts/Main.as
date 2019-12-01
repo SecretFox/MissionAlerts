@@ -32,8 +32,8 @@ class com.fox.missionAlerts.Main {
 		dAlertPurple = DistributedValue.Create("MissionAlerts_Purple");
 		dAlertBlue = DistributedValue.Create("MissionAlerts_Blue");
 		dAlertDossier = DistributedValue.Create("MissionAlerts_Dossier");
-		dFifo = DistributedValue.Create("MissionAlerts_Chat");
-		dChat = DistributedValue.Create("MissionAlerts_Fifo");
+		dFifo = DistributedValue.Create("MissionAlerts_Fifo");
+		dChat = DistributedValue.Create("MissionAlerts_Chat");
 	}
 	private function Load(){
 		AgentSystem.SignalMissionCompleted.Connect(CheckAlertsBuffer, this);
