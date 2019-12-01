@@ -81,7 +81,9 @@ class com.fox.missionAlerts.Main {
 			for (var i in Alerts){
 				var found;
 				for (var y in prev_alerts){
-					if (prev_alerts[y] == Alerts[i]) found = true;
+					if (prev_alerts[y] == Alerts[i]){
+						found = true;
+					}
 				}
 				if (!found){
 					if (DistributedValueBase.GetDValue("MissionAlerts_Fifo")){
