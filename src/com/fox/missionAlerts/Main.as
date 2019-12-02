@@ -39,6 +39,7 @@ class com.fox.missionAlerts.Main {
 		AgentSystem.SignalMissionCompleted.Connect(CheckAlertsBuffer, this);
 		AgentSystem.SignalAvailableMissionsUpdated.Connect(CheckAlertsBuffer, this);
 		AgentSystem.SignalActiveMissionsUpdated.Connect(CheckAlertsBuffer, this);
+		
 	}
 	private function Unload(){
 		AgentSystem.SignalMissionCompleted.Disconnect(CheckAlertsBuffer, this);
@@ -72,7 +73,7 @@ class com.fox.missionAlerts.Main {
 				var mission:AgentSystemMission = availableMissions[j];
 				var alert = this.CheckAlert(mission.m_Rewards, mission, mission.m_StarRating);
 				if (alert && !this.isActive(currentMissions, mission.m_MissionId)){
-					Alerts.push(alert);
+					Alerts.push([mission.m_MissionId, alert]);
 				}
 			}
 		}
@@ -80,20 +81,24 @@ class com.fox.missionAlerts.Main {
 			for (var i in Alerts){
 				var found;
 				for (var y in prev_alerts){
-					if (prev_alerts[y] == Alerts[i]){
+					if (prev_alerts[y][0] == Alerts[i][0]){
 						found = true;
 					}
 				}
 				if (!found){
 					if (DistributedValueBase.GetDValue("MissionAlerts_Fifo")){
-						UtilsBase.PrintChatText("<font color=\"#FF0000\">Mission Alert: </font>" + Alerts[i]);
+						UtilsBase.PrintChatText("<font color=\"#FF0000\">Mission Alert: </font>" + Alerts[i][1]);
 					}
 					if (DistributedValueBase.GetDValue("MissionAlerts_Chat")){
-						Chat.SignalShowFIFOMessage.Emit("Mission Alert: "+Alerts[i], 0);
+						Chat.SignalShowFIFOMessage.Emit("Mission Alert: "+Alerts[i][1], 0);
 					}
 				}
 			}
-			SetIcon(Alerts.join("\n"));
+			var tooltip:Array = []
+			for (var i in Alerts){
+				tooltip.push(Alerts[i][1]);
+			}
+			SetIcon(tooltip.join("\n"));
 		}
 		prev_alerts = Alerts;
 	}
