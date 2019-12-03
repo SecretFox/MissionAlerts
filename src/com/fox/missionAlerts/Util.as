@@ -1,5 +1,7 @@
 import com.GameInterface.AgentSystem;
+import com.GameInterface.AgentSystemMission;
 import com.GameInterface.DistributedValue;
+import com.GameInterface.LoreBase;
 import com.GameInterface.Tooltip.TooltipData;
 import com.GameInterface.Tooltip.TooltipManager;
 /*
@@ -70,20 +72,93 @@ class com.fox.missionAlerts.Util{
 	// itemID -> agentID
 	static function hasAgent(dossierID:Number) {
 		switch (dossierID) {
-			case 9399700:// virgil x
+			case 9399700:// virgil
 				return AgentSystem.HasAgent(223);
-			case 9399761:// sarah x
+			case 9399761:// sarah
 				return AgentSystem.HasAgent(225);
-			case 9399728: // ibrahim x
+			case 9399728: // ibrahim
 				return AgentSystem.HasAgent(221);
-			case 9399726:// calum x
+			case 9399726:// calum
 				return AgentSystem.HasAgent(212);
-			case 9399752:// carlos x
+			case 9399752:// carlos
 				return AgentSystem.HasAgent(213);
-			case 9399746:// siobhan x
+			case 9399746:// siobhan
 				return AgentSystem.HasAgent(238);
 			default:
 				return false;
 		}
+	}
+
+	// Returns true if mission is part of uncompleted mission chain
+	static function isNewChainMission(id:Number, mission:AgentSystemMission) {
+		switch(id){
+			case 2781: // The Lost Conquistador
+			case 2782: // The Trail of the Conquistador
+			case 2783: // Chasing Jeronimo
+			case 2784: // Night of the Transdimensional Fish People
+			case 2785: // Courting the Conquistador
+				if (LoreBase.IsLocked(11060)) { // Achievement: A Man of Principle
+					return "Jerónimo: "+mission.m_MissionName
+				}
+				return;
+			case 2786: // The Hidden Expedition
+			case 2787: // The Great Map Burglary
+			case 2788: // The Expedition into Triangle
+			case 2789: // Attack of the Conquistador Cadavers
+			case 2790: // Mysteries of the Sphere
+				if (LoreBase.IsLocked(11061)) {
+					return "Jerónimo2: "+mission.m_MissionName
+				}
+				return;
+			case 2801: // The Agartha Cartographer
+			case 2802: // Mapping the Past 
+			case 2795: // Into Deep Time
+			case 2804: // Once Again Into Agartha
+			case 2797: // The Future is Now
+				if (LoreBase.IsLocked(11062)) { // Achievements: Exploratory Cartographer
+					return "Jerónimo3: "+mission.m_MissionName
+				}
+				return;
+		
+			case 2806: // The Fungoid Mystery
+			case 2799: // Spores from Beyond
+			case 2808: // The Horror in Fungus
+				if (LoreBase.IsLocked(11063)) { // Achievements: Observing the Impossible
+					return "Jerónimo4: "+mission.m_MissionName
+				}
+				return;
+			case 2809: // Into Dark Agartha
+			case 2810: // The Conquistador's Secrets
+			case 2811: // The Riddle of Dark Agartha
+			case 2812: // The Reluctant Conquistador
+			case 2813: // Again Into the Void
+				if (LoreBase.IsLocked(11064)) { // Achievements: Once More Unto the Void
+					return "Jerónimo5: "+mission.m_MissionName
+				}
+				return;
+			case 344: // Dante's 1-9 circle
+			case 345:
+			case 346:
+			case 347:
+			case 348:
+			case 349:
+			case 350:
+			case 351:
+			case 352:
+			case 353: // Dante's Devil
+				if (LoreBase.IsLocked(10735)){
+					return "Dante: " + mission.m_MissionName
+				}
+				return;
+			case 373: // The Fountain of Youth
+			case 379: // Subterranean Lost and Found
+				if (LoreBase.IsLocked(10736)){
+					return "Guatemala: " + mission.m_MissionName
+				}
+				return;
+			default:
+				return false;
+		}
+		
 	}
 }

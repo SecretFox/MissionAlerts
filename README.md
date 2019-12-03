@@ -1,7 +1,7 @@
 # MissionAlerts
 Displays alerts about available agent missions.  
 Alerts are shown as chat/fifo messages(configurable).  
-Agent icon color will also get colored  
+Also changes agent icon color and adds a tooltip to it when missions are available.    
 
 ### Options  
 `/option MissionAlerts_Vanity true` Display alert when Vanity Bag mission becomes available  
