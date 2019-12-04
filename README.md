@@ -4,10 +4,13 @@ Alerts are shown as chat/fifo messages(configurable).
 Also changes agent icon color and adds a tooltip to it when missions are available.    
 
 ### Options  
-`/option MissionAlerts_Vanity true` Display alert when Vanity Bag mission becomes available  
-`/option MissionAlerts_Purple true` Display alert when Purple Gear Bag mission becomes available  
-`/option MissionAlerts_Blue true`  Display alert when Blue Gear Bag mission becomes available  
-`/option MissionAlerts_Dossier true` Display alert when Dossier mission becomes available  
+By default all of these are on, set them to false to disable them  
+`/option MissionAlerts_Vanity true` Enable Vanity Bag alerts  
+`/option MissionAlerts_Epic true` Enable Epic Agent Gear Bag alerts  
+`/option MissionAlerts_Superior true` Enable Superior Agent Gear Bag alerts  
+`/option MissionAlerts_Dossier true` Enable unowned dossier alerts  
+`/option MissionAlerts_Chain true` Enable uncompleted mission chain alerts  
+`/option MissionAlerts_Special true` Enable special mission alerts  
 `/option MissionAlerts_Chat true` Display alerts in chat (System chat channel)  
 `/option MissionAlerts_Fifo true` Display alerts in fadein/fadeout message  
 
