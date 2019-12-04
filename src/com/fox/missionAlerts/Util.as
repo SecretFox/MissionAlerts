@@ -1,14 +1,51 @@
 import com.GameInterface.AgentSystem;
 import com.GameInterface.AgentSystemMission;
 import com.GameInterface.DistributedValue;
+import com.GameInterface.InventoryBase;
+import com.GameInterface.InventoryItem;
 import com.GameInterface.LoreBase;
 import com.GameInterface.Tooltip.TooltipData;
 import com.GameInterface.Tooltip.TooltipManager;
+import com.Utils.Colors;
+import com.Utils.LDBFormat;
 /*
  * ...
  * @author fox
  */
 class com.fox.missionAlerts.Util{
+	// Alert[0] == Tier string
+	// Alert[1] == ItemID array
+	// Alert[2] == ChainMission string
+	static function CreateChatFeedbackString(Alert:Array):String{
+		var ret:String = Alert[0];
+		if (Alert[2]){
+			ret += Alert[2];
+		}
+		for (var i in Alert[1]){
+			ret += CreateItemLink(Alert[1][i]);
+		}
+		return ret;
+	}
+	static function CreateItemLink(itemID:Number):String{
+		return "<a style=\"text-decoration:none\" href=\"itemref:// " +
+		itemID + 
+		"/0/0/0/0/0/616e09b0:4dd8af57:3b929b98:cf0d4d11/b290805c:29e627ca:b290805c:29e627ca/b290805c:29e627ca:b290805c:29e627ca\">" +
+		CreateColoredLink(itemID)+"</a>"
+	}
+	static function CreateColoredLink(itemID:Number):String{
+		var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(itemID);
+		return "<font color=\"" + Colors.ColorToHtml(Colors.GetItemRarityColor(item.m_Rarity)) + "\">[" + LDBFormat.LDBGetText(50200,itemID)+"]</font>"
+	}
+	static function CreateFifoFeedbackString(Alert){
+		var ret:String = Alert[0];
+		if (Alert[2]){
+			ret += Alert[2];
+		}
+		for (var i in Alert[1]){
+			ret += CreateColoredLink(Alert[1][i]);
+		}
+		return ret;
+	}
 	
 // icon might not be loaded if this is called before topbar loads
 	static function SetIcon(data) {
@@ -25,13 +62,13 @@ class com.fox.missionAlerts.Util{
 				var tooltipData:TooltipData = new TooltipData();
 				var desc:Array = []
 				for (var i in data){
-					desc.push(data[i][1] + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(data[i][0].m_MissionId),data[i][0].m_MissionName));
+					desc.push(Util.CreateFifoFeedbackString(data[i][1]) + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(data[i][0].m_MissionId),data[i][0].m_MissionName));
 				}
 				tooltipData.AddDescription("<font size='11'>"+desc.join("\n")+"</font>");
 				tooltipData.m_Padding = 4;
-				tooltipData.m_MaxWidth = 200;
+				tooltipData.m_MaxWidth = 400;
 				tooltipData.m_Color = 0xFF8000;
-				tooltipData.m_Title = "<font size='14'><b>Alerts</b></font>";
+				tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.3.0</b></font>";
 				
 				var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
 			  
@@ -107,7 +144,7 @@ class com.fox.missionAlerts.Util{
 			case 2789: // Attack of the Conquistador Cadavers
 			case 2790: // Mysteries of the Sphere
 				if (LoreBase.IsLocked(11061)) {
-					return "Jerónimo2: "+mission.m_MissionName
+					return "Jerónimo: "+mission.m_MissionName
 				}
 				return;
 			case 2801: // The Agartha Cartographer
@@ -116,7 +153,7 @@ class com.fox.missionAlerts.Util{
 			case 2804: // Once Again Into Agartha
 			case 2797: // The Future is Now
 				if (LoreBase.IsLocked(11062)) { // Achievements: Exploratory Cartographer
-					return "Jerónimo3: "+mission.m_MissionName
+					return "Jerónimo: "+mission.m_MissionName
 				}
 				return;
 		
@@ -124,7 +161,7 @@ class com.fox.missionAlerts.Util{
 			case 2799: // Spores from Beyond
 			case 2808: // The Horror in Fungus
 				if (LoreBase.IsLocked(11063)) { // Achievements: Observing the Impossible
-					return "Jerónimo4: "+mission.m_MissionName
+					return "Jerónimo: "+mission.m_MissionName
 				}
 				return;
 			case 2809: // Into Dark Agartha
@@ -133,7 +170,7 @@ class com.fox.missionAlerts.Util{
 			case 2812: // The Reluctant Conquistador
 			case 2813: // Again Into the Void
 				if (LoreBase.IsLocked(11064)) { // Achievements: Once More Unto the Void
-					return "Jerónimo5: "+mission.m_MissionName
+					return "Jerónimo: "+mission.m_MissionName
 				}
 				return;
 			case 344: // Dante's 1-9 circle
@@ -157,7 +194,7 @@ class com.fox.missionAlerts.Util{
 				}
 				return;
 			default:
-				return false;
+				return;
 		}
 		
 	}

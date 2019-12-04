@@ -3,6 +3,8 @@ import com.GameInterface.AgentSystemMission;
 import com.GameInterface.Chat;
 import com.GameInterface.DistributedValue;
 import com.GameInterface.DistributedValueBase;
+import com.GameInterface.InventoryBase;
+import com.GameInterface.InventoryItem;
 import com.GameInterface.UtilsBase;
 import com.Utils.Archive;
 import com.Utils.LDBFormat;
@@ -31,8 +33,8 @@ class com.fox.missionAlerts.Main {
 
 	public function Main() {
 		dAlertVanity = DistributedValue.Create("MissionAlerts_Vanity");
-		dAlertPurple = DistributedValue.Create("MissionAlerts_Purple");
-		dAlertBlue = DistributedValue.Create("MissionAlerts_Blue");
+		dAlertPurple = DistributedValue.Create("MissionAlerts_Epic");
+		dAlertBlue = DistributedValue.Create("MissionAlerts_Superior");
 		dAlertDossier = DistributedValue.Create("MissionAlerts_Dossier");
 		dAlertChain = DistributedValue.Create("MissionAlerts_Chain");
 		dAlertSpecial = DistributedValue.Create("MissionAlerts_Special");
@@ -87,8 +89,8 @@ class com.fox.missionAlerts.Main {
 			for (var j=0; j < availableMissions.length; j++) {
 				var mission:AgentSystemMission = availableMissions[j];
 				if (mission.m_MissionId){
-					var alert = CheckAlert(mission.m_Rewards, mission, mission.m_StarRating);
-					if (alert && !Util.isActive(currentMissions, mission.m_MissionId)) {
+					var alert:Array = CheckAlert(mission);
+					if ((alert[1].length > 0 || alert[2]) && !Util.isActive(currentMissions, mission.m_MissionId)) {
 						Alerts.push([mission, alert]);
 					}
 				}
@@ -104,10 +106,10 @@ class com.fox.missionAlerts.Main {
 				}
 				if (!found) {
 					if (DistributedValueBase.GetDValue("MissionAlerts_Chat")) {
-						UtilsBase.PrintChatText("<font color=\"#FF0000\">Mission Alert: </font>" + Alerts[i][1]);
+						UtilsBase.PrintChatText("<font color=\"#FF0000\">Mission Alert: </font>" + Util.CreateChatFeedbackString(Alerts[i][1]));
 					}
 					if (DistributedValueBase.GetDValue("MissionAlerts_Fifo")) {
-						Chat.SignalShowFIFOMessage.Emit("Mission Alert: "+Alerts[i][1], 0);
+						Chat.SignalShowFIFOMessage.Emit("<font color=\"#FF0000\">Mission Alert: </font>" + Util.CreateFifoFeedbackString(Alerts[i][1]), 0);
 					}
 				}
 			}
@@ -115,42 +117,36 @@ class com.fox.missionAlerts.Main {
 		}
 		prev_alerts = Alerts;
 	}
-	private function CheckAlert(rewardarray:Array, mission:AgentSystemMission, tier:Number) {
+	private function CheckAlert(mission:AgentSystemMission) {
 		if (dAlertSpecial.GetValue() && mission.m_StarRating == 6){
-			return "Special Mission";
+			return [[],[],"Special Mission"];
 		}
-		var ret:String = "Tier" + tier + ": ";
-		var res:Array = [];
+		var ret:String = "Tier" + mission.m_StarRating + ": ";
+		var items:Array = [];
 		var chain;
-		for (var i in rewardarray) {
-			if (dAlertVanity.GetValue() && rewardarray[i] == 9407816) {
-				res.push("Vanity Bag");
+		for (var i in mission.m_Rewards) {
+			var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(mission.m_Rewards[i]);
+			if (dAlertVanity.GetValue() && mission.m_Rewards[i] == 9407816) {
+				items.push(mission.m_Rewards[i]);
 			}
-			else if (dAlertPurple.GetValue() && rewardarray[i] == 9400616) {
-				res.push("Purple Bag");
+			else if (dAlertPurple.GetValue() && mission.m_Rewards[i] == 9400616) {
+				items.push(mission.m_Rewards[i]);
 			}
-			else if (dAlertBlue.GetValue() && rewardarray[i] == 9400614) {
-				res.push("Blue Bag");
+			else if (dAlertBlue.GetValue() && mission.m_Rewards[i] == 9400614) {
+				items.push(mission.m_Rewards[i]);
 			}
 			else if (dAlertDossier.GetValue() &&
-				LDBFormat.LDBGetText(50200, rewardarray[i]).toLowerCase().indexOf("dossier") >= 0 && 
-				!Util.hasAgent(rewardarray[i]))
+				LDBFormat.LDBGetText(50200, mission.m_Rewards[i]).toLowerCase().indexOf("dossier") >= 0 && 
+				!Util.hasAgent(mission.m_Rewards[i]))
 			{
-				res.push(LDBFormat.LDBGetText(50200, rewardarray[i]));
+				
+				items.push(mission.m_Rewards[i]);
 			}
 		}
 		if (dAlertChain.GetValue()){
 			chain = Util.isNewChainMission(mission.m_MissionId, mission);
 		}
-		if (res.length > 0 || chain){
-			if (!chain){
-				return ret + res.join(" + ");
-			}
-			else if (res.length > 0){
-				return [chain,res.join(" + ")].join("+")
-			}
-			return chain;
-		}
+		return[ret, items, chain];
 	}
 
 }
