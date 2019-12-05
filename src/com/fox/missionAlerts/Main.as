@@ -124,23 +124,27 @@ class com.fox.missionAlerts.Main {
 		var ret:String = "Tier" + mission.m_StarRating + ": ";
 		var items:Array = [];
 		var chain;
-		for (var i in mission.m_Rewards) {
-			var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(mission.m_Rewards[i]);
-			if (dAlertVanity.GetValue() && mission.m_Rewards[i] == 9407816) {
-				items.push(mission.m_Rewards[i]);
-			}
-			else if (dAlertPurple.GetValue() && mission.m_Rewards[i] == 9400616) {
-				items.push(mission.m_Rewards[i]);
-			}
-			else if (dAlertBlue.GetValue() && mission.m_Rewards[i] == 9400614) {
-				items.push(mission.m_Rewards[i]);
-			}
-			else if (dAlertDossier.GetValue() &&
-				LDBFormat.LDBGetText(50200, mission.m_Rewards[i]).toLowerCase().indexOf("dossier") >= 0 && 
-				!Util.hasAgent(mission.m_Rewards[i]))
-			{
-				
-				items.push(mission.m_Rewards[i]);
+		var reward = [mission.m_Rewards, mission.m_BonusRewards];
+		for (var type in reward){
+			for (var i in reward[type]) {
+				var itemID = reward[type][i];
+				var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate( );
+				if (dAlertVanity.GetValue() && itemID == 9407816) {
+					items.push(itemID);
+				}
+				else if (dAlertPurple.GetValue() && itemID == 9400616) {
+					items.push(itemID);
+				}
+				else if (dAlertBlue.GetValue() && itemID == 9400614) {
+					items.push(itemID);
+				}
+				else if (dAlertDossier.GetValue() &&
+					item.m_Name.toLowerCase().indexOf("dossier") >= 0 && 
+					!Util.hasAgent(itemID))
+				{
+					
+					items.push(itemID);
+				}
 			}
 		}
 		if (dAlertChain.GetValue()){
