@@ -7,7 +7,6 @@ import com.GameInterface.InventoryBase;
 import com.GameInterface.InventoryItem;
 import com.GameInterface.UtilsBase;
 import com.Utils.Archive;
-import com.Utils.LDBFormat;
 import com.fox.missionAlerts.Util;
 import mx.utils.Delegate;
 
@@ -18,6 +17,7 @@ class com.fox.missionAlerts.Main {
 	private var dAlertDossier:DistributedValue;
 	private var dAlertChain:DistributedValue;
 	private var dAlertSpecial:DistributedValue;
+	private var dAlertJeronimo:DistributedValue;
 	private var dFifo:DistributedValue;
 	private var dChat:DistributedValue;
 	private var checkTimeout:Number;
@@ -38,6 +38,7 @@ class com.fox.missionAlerts.Main {
 		dAlertDossier = DistributedValue.Create("MissionAlerts_Dossier");
 		dAlertChain = DistributedValue.Create("MissionAlerts_Chain");
 		dAlertSpecial = DistributedValue.Create("MissionAlerts_Special");
+		dAlertJeronimo = DistributedValue.Create("MissionAlerts_JeronimoItems");
 		dFifo = DistributedValue.Create("MissionAlerts_Fifo");
 		dChat = DistributedValue.Create("MissionAlerts_Chat");
 	}
@@ -59,6 +60,7 @@ class com.fox.missionAlerts.Main {
 		dAlertDossier.SetValue(config.FindEntry("alert_dossier", true));
 		dAlertChain.SetValue(config.FindEntry("alert_chain", true));
 		dAlertSpecial.SetValue(config.FindEntry("alert_special", true));
+		dAlertJeronimo.SetValue(config.FindEntry("alert_jeronimo", true));
 		dFifo.SetValue(config.FindEntry("alert_fifo", true));
 		dChat.SetValue(config.FindEntry("alert_chat", true));
 		CheckAlertsBuffer();
@@ -71,6 +73,7 @@ class com.fox.missionAlerts.Main {
 		conf.AddEntry("alert_dossier", dAlertDossier.GetValue());
 		conf.AddEntry("alert_chain", dAlertChain.GetValue());
 		conf.AddEntry("alert_special", dAlertSpecial.GetValue());
+		conf.AddEntry("alert_jeronimo", dAlertJeronimo.GetValue());
 		conf.AddEntry("alert_fifo", dFifo.GetValue());
 		conf.AddEntry("alert_chat", dChat.GetValue());
 		return conf
@@ -128,7 +131,7 @@ class com.fox.missionAlerts.Main {
 		for (var type in reward){
 			for (var i in reward[type]) {
 				var itemID = reward[type][i];
-				var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate( );
+				var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(itemID);
 				if (dAlertVanity.GetValue() && itemID == 9407816) {
 					items.push(itemID);
 				}
@@ -143,6 +146,11 @@ class com.fox.missionAlerts.Main {
 					!Util.hasAgent(itemID))
 				{
 					
+					items.push(itemID);
+				}
+				else if ( dAlertJeronimo.GetValue() &&
+					Util.IsJeronimoItem(itemID))
+				{
 					items.push(itemID);
 				}
 			}

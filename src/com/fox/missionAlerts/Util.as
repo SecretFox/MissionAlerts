@@ -68,7 +68,7 @@ class com.fox.missionAlerts.Util{
 				tooltipData.m_Padding = 4;
 				tooltipData.m_MaxWidth = 400;
 				tooltipData.m_Color = 0xFF8000;
-				tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.3.0</b></font>";
+				tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.4.0</b></font>";
 				
 				var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
 			  
@@ -121,6 +121,17 @@ class com.fox.missionAlerts.Util{
 				return AgentSystem.HasAgent(213);
 			case 9399746:// siobhan
 				return AgentSystem.HasAgent(238);
+			default:
+				return false;
+		}
+	}
+
+	static function IsJeronimoItem(itemID:Number){
+		switch(itemID){
+			case 9455193:
+			case 9455194:
+			case 9455195:
+				return true;
 			default:
 				return false;
 		}
