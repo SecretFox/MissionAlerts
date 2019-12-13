@@ -11,6 +11,7 @@ By default all of these are on, set them to false to disable them
 `/option MissionAlerts_Dossier true` Enable unowned dossier alerts  
 `/option MissionAlerts_Chain true` Enable uncompleted mission chain alerts  
 `/option MissionAlerts_Special true` Enable special mission alerts  
+`/option MissionAlerts_JeronimoItems true` Enable Jerónimo item alerts  
 `/option MissionAlerts_Chat true` Display alerts in chat (System chat channel)  
 `/option MissionAlerts_Fifo true` Display alerts in fadein/fadeout message  
 
