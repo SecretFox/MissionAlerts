@@ -146,33 +146,41 @@ class com.fox.missionAlerts.Util{
 			case 2784: // Night of the Transdimensional Fish People
 			case 2785: // Courting the Conquistador
 				if (LoreBase.IsLocked(11060)) { // Achievement: A Man of Principle
-					return "Jerónimo: "+mission.m_MissionName
+					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
 			case 2786: // The Hidden Expedition
 			case 2787: // The Great Map Burglary
-			case 2788: // The Expedition into Triangle
+			case 2788: // Expedition Into the Triangle
 			case 2789: // Attack of the Conquistador Cadavers
 			case 2790: // Mysteries of the Sphere
 				if (LoreBase.IsLocked(11061)) {
-					return "Jerónimo: "+mission.m_MissionName
+					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
 			case 2801: // The Agartha Cartographer
-			case 2802: // Mapping the Past 
+			case 2793: // The Agartha Cartographer
+			case 2802: // Mapping the Past
+			case 2794: // Mapping the Past
 			case 2795: // Into Deep Time
+			case 2803: // Into Deep Time
 			case 2804: // Once Again Into Agartha
+			case 2796: // Once Again Into Agartha
 			case 2797: // The Future is Now
+			case 2805: // The Future is Now
 				if (LoreBase.IsLocked(11062)) { // Achievements: Exploratory Cartographer
-					return "Jerónimo: "+mission.m_MissionName
+					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
 		
 			case 2806: // The Fungoid Mystery
+			case 2798: // The Fungoid Mystery
 			case 2799: // Spores from Beyond
+			case 2807: // Spores from Beyond
 			case 2808: // The Horror in Fungus
+			case 2800: // The Horror in Fungus
 				if (LoreBase.IsLocked(11063)) { // Achievements: Observing the Impossible
-					return "Jerónimo: "+mission.m_MissionName
+					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
 			case 2809: // Into Dark Agartha
@@ -181,7 +189,7 @@ class com.fox.missionAlerts.Util{
 			case 2812: // The Reluctant Conquistador
 			case 2813: // Again Into the Void
 				if (LoreBase.IsLocked(11064)) { // Achievements: Once More Unto the Void
-					return "Jerónimo: "+mission.m_MissionName
+					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
 			case 344: // Dante's 1-9 circle
@@ -195,13 +203,13 @@ class com.fox.missionAlerts.Util{
 			case 352:
 			case 353: // Dante's Devil
 				if (LoreBase.IsLocked(10735)){
-					return "Dante: " + mission.m_MissionName
+					return "Dante: " + mission.m_MissionName;
 				}
 				return;
 			case 373: // The Fountain of Youth
 			case 379: // Subterranean Lost and Found
 				if (LoreBase.IsLocked(10736)){
-					return "Guatemala: " + mission.m_MissionName
+					return "Guatemala: " + mission.m_MissionName;
 				}
 				return;
 			default:
