@@ -86,6 +86,7 @@ class com.fox.missionAlerts.Main {
 	}
 	private function CheckAlerts() {
 		var Alerts = new Array();
+		var hasComplete:Boolean;
 		var currentMissions = AgentSystem.GetActiveMissions();
 		for (var i=1; i <= 6; i++) {
 			var availableMissions:Array = AgentSystem.GetMissionsByStarRating(i);
@@ -97,6 +98,13 @@ class com.fox.missionAlerts.Main {
 						Alerts.push([mission, alert]);
 					}
 				}
+			}
+		}
+		var activeMissions:Array = AgentSystem.GetActiveMissions();
+		for (var i=0; i < activeMissions.length; i++){
+			if (AgentSystem.IsMissionComplete(activeMissions[i].m_MissionId)){
+				hasComplete = true;
+				break;
 			}
 		}
 		if (Alerts.length > 0) {
@@ -116,8 +124,8 @@ class com.fox.missionAlerts.Main {
 					}
 				}
 			}
-			Util.SetIcon(Alerts);
 		}
+		Util.SetIcon(Alerts, hasComplete);
 		prev_alerts = Alerts;
 	}
 	private function CheckAlert(mission:AgentSystemMission) {
@@ -145,7 +153,6 @@ class com.fox.missionAlerts.Main {
 					item.m_Name.toLowerCase().indexOf("dossier") >= 0 && 
 					!Util.hasAgent(itemID))
 				{
-					
 					items.push(itemID);
 				}
 				else if ( dAlertJeronimo.GetValue() &&

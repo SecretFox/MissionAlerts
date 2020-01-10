@@ -8,11 +8,14 @@ import com.GameInterface.Tooltip.TooltipData;
 import com.GameInterface.Tooltip.TooltipManager;
 import com.Utils.Colors;
 import com.Utils.LDBFormat;
+import flash.geom.ColorTransform;
+import flash.geom.Transform;
 /*
- * ...
- * @author fox
- */
-class com.fox.missionAlerts.Util{
+* ...
+* @author fox
+*/
+class com.fox.missionAlerts.Util {
+	
 	// Alert[0] == Tier string
 	// Alert[1] == ItemID array
 	// Alert[2] == ChainMission string
@@ -26,16 +29,19 @@ class com.fox.missionAlerts.Util{
 		}
 		return ret;
 	}
+	
 	static function CreateItemLink(itemID:Number):String{
 		return "<a style=\"text-decoration:none\" href=\"itemref:// " +
 		itemID + 
 		"/0/0/0/0/0/616e09b0:4dd8af57:3b929b98:cf0d4d11/b290805c:29e627ca:b290805c:29e627ca/b290805c:29e627ca:b290805c:29e627ca\">" +
 		CreateColoredLink(itemID)+"</a>"
 	}
+	
 	static function CreateColoredLink(itemID:Number):String{
 		var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(itemID);
 		return "<font color=\"" + Colors.ColorToHtml(Colors.GetItemRarityColor(item.m_Rarity)) + "\">[" + LDBFormat.LDBGetText(50200,itemID)+"]</font>"
 	}
+	
 	static function CreateFifoFeedbackString(Alert){
 		var ret:String = Alert[0];
 		if (Alert[2]){
@@ -47,43 +53,81 @@ class com.fox.missionAlerts.Util{
 		return ret;
 	}
 	
-// icon might not be loaded if this is called before topbar loads
-	static function SetIcon(data) {
-		if (!_root.mainmenuwindow.m_AgentIconContainer) {
-			setTimeout(SetIcon, 500, data);
+	// icon might not be loaded if this is called before topbar loads
+	static function SetIcon(data:Array, complete) {
+		var container:MovieClip = _root.mainmenuwindow.m_AgentIconContainer;
+		if (!container) {
+			setTimeout(SetIcon, 500, data,complete);
 			return
 		}
-		_root.mainmenuwindow.m_AgentIconContainer._alpha = 100;
-		_root.mainmenuwindow.m_AgentIcon.enabled = true;
-		_root.mainmenuwindow.m_AgentIcon.gotoAndStop("urgent");
-		_root.mainmenuwindow.m_AgentIconContainer.onRollOver =  function(){
-			if (this._visible && this._alpha > 0)
-			{
-				var tooltipData:TooltipData = new TooltipData();
-				var desc:Array = []
-				for (var i in data){
-					desc.push(Util.CreateFifoFeedbackString(data[i][1]) + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(data[i][0].m_MissionId),data[i][0].m_MissionName));
+		var icon:MovieClip = _root.mainmenuwindow.m_AgentIconContainer.m_AgentIcon;
+		/*
+		 * for testing,forces icon visibility
+		icon.enabled = true;
+		icon.gotoAndStop("urgent");
+		container._alpha = 100;
+		complete = true;
+		*/
+		if (data.length > 0){
+			var reload:Boolean;
+			if (!icon.enabled){
+				reload = true;
+				icon.enabled = true;
+			}
+			var iconTransform:Transform = new Transform(  icon );
+			var iconColorTransform:ColorTransform = new ColorTransform();
+			iconColorTransform.rgb = 0x41F237; 
+			iconTransform.colorTransform = iconColorTransform;
+			container._alpha = 100;
+			
+			container.onRollOver =  function(){
+				if (this._visible && this._alpha > 0)
+				{
+					var tooltipData:TooltipData = new TooltipData();
+					var desc:Array = []
+					for (var i in data){
+						desc.push(Util.CreateFifoFeedbackString(data[i][1]) + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(data[i][0].m_MissionId),data[i][0].m_MissionName));
+					}
+					tooltipData.AddDescription("<font size='11'>"+desc.join("\n")+"</font>");
+					tooltipData.m_Padding = 4;
+					tooltipData.m_MaxWidth = 400;
+					tooltipData.m_Color = 0xFF8000;
+					tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.5.0</b></font>";
+					
+					var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
+				  
+					this.m_Tooltip = TooltipManager.GetInstance().ShowTooltip( container, undefined, delay, tooltipData );
 				}
-				tooltipData.AddDescription("<font size='11'>"+desc.join("\n")+"</font>");
-				tooltipData.m_Padding = 4;
-				tooltipData.m_MaxWidth = 400;
-				tooltipData.m_Color = 0xFF8000;
-				tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.4.0</b></font>";
-				
-				var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
-			  
-				this.m_Tooltip = TooltipManager.GetInstance().ShowTooltip( _root.mainmenuwindow.m_AgentIconContainer, undefined, delay, tooltipData );
+			}
+			
+			container.onRollOut = function(){
+				if (this.m_Tooltip != undefined){
+					this.m_Tooltip.Close();
+					this.m_Tooltip = undefined;
+				}
+			}
+			if(reload)_root.mainmenuwindow.Layout();
+		} else if(icon.enabled) {
+			var iconTransform:Transform = new Transform(  icon );
+			var iconColorTransform:ColorTransform = new ColorTransform(); 
+			iconTransform.colorTransform = iconColorTransform;
+		}
+		if(complete && icon.enabled){
+			if (!container.m_CopyClip){
+				var m_CopyClip:MovieClip = icon.duplicateMovieClip("m_CopyClip", container.getNextHighestDepth());
+				m_CopyClip.gotoAndStop("complete");
+				var iconTransform:Transform = new Transform(  m_CopyClip );
+				var iconColorTransform:ColorTransform = new ColorTransform(); 
+				iconTransform.colorTransform = iconColorTransform;
+				m_CopyClip.setMask(null); //crashes without
+				com.GameInterface.ProjectUtils.SetMovieClipMask(m_CopyClip, container, icon._height, icon._width/2);
+			}
+			container.m_CopyClip._alpha = 100;
+		}else{
+			if (container.m_CopyClip){
+				container.m_CopyClip._alpha = 0;
 			}
 		}
-		
-		_root.mainmenuwindow.m_AgentIconContainer.onRollOut = _root.mainmenuwindow.m_AgentIconContainer.onDragOut = function(){
-			if (this.m_Tooltip != undefined)
-			{
-				this.m_Tooltip.Close();
-				this.m_Tooltip = undefined;
-			}
-		}
-		_root.mainmenuwindow.Layout();
 	}
 	static function CalculateTimeString(timeLeft,name){
 		var time:Number = com.GameInterface.Utils.GetServerSyncedTime();
