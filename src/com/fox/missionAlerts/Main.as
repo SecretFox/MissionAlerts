@@ -18,19 +18,23 @@ class com.fox.missionAlerts.Main {
 	private var dAlertChain:DistributedValue;
 	private var dAlertSpecial:DistributedValue;
 	private var dAlertJeronimo:DistributedValue;
+	private var dAlertUrgent:DistributedValue;
+	private var dAlertOutstanding:DistributedValue;
 	private var dFifo:DistributedValue;
 	private var dChat:DistributedValue;
 	private var checkTimeout:Number;
 	private var prev_alerts:Array;
+	private var loaded:Boolean;
+	private var runtimeout;
 
 	public static function main(swfRoot:MovieClip):Void {
 		var s_app = new Main(swfRoot);
-		swfRoot.onLoad = function() {s_app.Load()};
-		swfRoot.onUnload = function() {s_app.Unload()};
+		swfRoot.onLoad = function(){s_app.Load()};
+		swfRoot.onUnload = function(){s_app.Unload()};
 		swfRoot.OnModuleActivated = function(config:Archive) { s_app.Activate(config); };
 		swfRoot.OnModuleDeactivated = function() { return s_app.Deactivate(); };
 	}
-
+	
 	public function Main() {
 		dAlertVanity = DistributedValue.Create("MissionAlerts_Vanity");
 		dAlertPurple = DistributedValue.Create("MissionAlerts_Epic");
@@ -39,31 +43,41 @@ class com.fox.missionAlerts.Main {
 		dAlertChain = DistributedValue.Create("MissionAlerts_Chain");
 		dAlertSpecial = DistributedValue.Create("MissionAlerts_Special");
 		dAlertJeronimo = DistributedValue.Create("MissionAlerts_JeronimoItems");
+		dAlertOutstanding = DistributedValue.Create("MissionAlerts_IgnoreOutstanding");
+		dAlertUrgent = DistributedValue.Create("MissionAlerts_Urgent");
 		dFifo = DistributedValue.Create("MissionAlerts_Fifo");
 		dChat = DistributedValue.Create("MissionAlerts_Chat");
 	}
-	private function Load() {
-		AgentSystem.SignalMissionCompleted.Connect(CheckAlertsBuffer, this);
-		AgentSystem.SignalAvailableMissionsUpdated.Connect(CheckAlertsBuffer, this);
-		AgentSystem.SignalActiveMissionsUpdated.Connect(CheckAlertsBuffer, this);
-
+	
+	public function Load() {
+		AgentSystem.SignalMissionCompleted.Connect(RunBuffer, this);
+		AgentSystem.SignalAvailableMissionsUpdated.Connect(RunBuffer, this);
+		AgentSystem.SignalActiveMissionsUpdated.Connect(RunBuffer, this);
 	}
-	private function Unload() {
-		AgentSystem.SignalMissionCompleted.Disconnect(CheckAlertsBuffer, this);
-		AgentSystem.SignalAvailableMissionsUpdated.Disconnect(CheckAlertsBuffer, this);
-		AgentSystem.SignalActiveMissionsUpdated.Disconnect(CheckAlertsBuffer, this);
+	
+	public function Unload() {
+		AgentSystem.SignalMissionCompleted.Disconnect(RunBuffer, this);
+		AgentSystem.SignalAvailableMissionsUpdated.Disconnect(RunBuffer, this);
+		AgentSystem.SignalActiveMissionsUpdated.Disconnect(RunBuffer, this);
 	}
+	
 	public function Activate(config:Archive) {
-		dAlertVanity.SetValue(config.FindEntry("alert_vanity", true));
-		dAlertPurple.SetValue(config.FindEntry("alert_purple", true));
-		dAlertBlue.SetValue(config.FindEntry("alert_blue", true));
-		dAlertDossier.SetValue(config.FindEntry("alert_dossier", true));
-		dAlertChain.SetValue(config.FindEntry("alert_chain", true));
-		dAlertSpecial.SetValue(config.FindEntry("alert_special", true));
-		dAlertJeronimo.SetValue(config.FindEntry("alert_jeronimo", true));
-		dFifo.SetValue(config.FindEntry("alert_fifo", true));
-		dChat.SetValue(config.FindEntry("alert_chat", true));
-		CheckAlertsBuffer();
+		if (!loaded){
+			loaded = true;
+			dAlertVanity.SetValue(config.FindEntry("alert_vanity", true));
+			dAlertPurple.SetValue(config.FindEntry("alert_purple", true));
+			dAlertBlue.SetValue(config.FindEntry("alert_blue", true));
+			dAlertDossier.SetValue(config.FindEntry("alert_dossier", true));
+			dAlertChain.SetValue(config.FindEntry("alert_chain", true));
+			dAlertSpecial.SetValue(config.FindEntry("alert_special", true));
+			dAlertJeronimo.SetValue(config.FindEntry("alert_jeronimo", true));
+			dAlertUrgent.SetValue(config.FindEntry("alert_urgent", true));
+			dAlertOutstanding.SetValue(config.FindEntry("alert_outstanding", false));
+			
+			dFifo.SetValue(config.FindEntry("alert_fifo", true));
+			dChat.SetValue(config.FindEntry("alert_chat", true));
+		}
+		Hook();
 	}
 	public function Deactivate() {
 		var conf:Archive = new Archive();
@@ -74,16 +88,35 @@ class com.fox.missionAlerts.Main {
 		conf.AddEntry("alert_chain", dAlertChain.GetValue());
 		conf.AddEntry("alert_special", dAlertSpecial.GetValue());
 		conf.AddEntry("alert_jeronimo", dAlertJeronimo.GetValue());
+		conf.AddEntry("alert_outstanding", dAlertOutstanding.GetValue());
+		conf.AddEntry("alert_urgent", dAlertUrgent.GetValue());
 		conf.AddEntry("alert_fifo", dFifo.GetValue());
 		conf.AddEntry("alert_chat", dChat.GetValue());
 		return conf
 	}
 	// has to be ran after icon has updated
 	// Hooking the icon properly is annoying since it resets OnModuleActivated
-	private function CheckAlertsBuffer() {
-		clearTimeout(checkTimeout);
-		checkTimeout = setTimeout(Delegate.create(this, CheckAlerts), 500);
+	private function Hook() {
+		if (!_root.mainmenuwindow.UpdateAgentSystemIcon){
+			setTimeout(Delegate.create(this, Hook), 500);
+			return
+		}
+		if (_root.mainmenuwindow.AgentIconHook){
+			return
+		}
+		_root.mainmenuwindow.UpdateAgentSystemIcon = Delegate.create(this, RunBuffer);
+		AgentSystem.SignalMissionCompleted.Disconnect(_root.mainmenuwindow.UpdateAgentSystemIcon);
+		AgentSystem.SignalAvailableMissionsUpdated.Disconnect(_root.mainmenuwindow.UpdateAgentSystemIcon);
+		AgentSystem.SignalActiveMissionsUpdated.Disconnect(_root.mainmenuwindow.UpdateAgentSystemIcon);
+		_root.mainmenuwindow.AgentIconHook = true;
+		_root.mainmenuwindow.UpdateAgentSystemIcon();
 	}
+	
+	private function RunBuffer(){
+		clearTimeout(runtimeout);
+		runtimeout = setTimeout(Delegate.create(this, CheckAlerts), 500);
+	}
+	
 	private function CheckAlerts() {
 		var Alerts = new Array();
 		var hasComplete:Boolean;
@@ -94,7 +127,7 @@ class com.fox.missionAlerts.Main {
 				var mission:AgentSystemMission = availableMissions[j];
 				if (mission.m_MissionId){
 					var alert:Array = CheckAlert(mission);
-					if ((alert[1].length > 0 || alert[2]) && !Util.isActive(currentMissions, mission.m_MissionId)) {
+					if ((alert[1].length > 0 || alert[2] || alert[3]) && !Util.isActive(currentMissions, mission.m_MissionId)) {
 						Alerts.push([mission, alert]);
 					}
 				}
@@ -128,6 +161,7 @@ class com.fox.missionAlerts.Main {
 		Util.SetIcon(Alerts, hasComplete);
 		prev_alerts = Alerts;
 	}
+	
 	private function CheckAlert(mission:AgentSystemMission) {
 		if (dAlertSpecial.GetValue() && mission.m_StarRating == 6){
 			return [[],[],"Special Mission"];
@@ -135,18 +169,25 @@ class com.fox.missionAlerts.Main {
 		var ret:String = "Tier" + mission.m_StarRating + ": ";
 		var items:Array = [];
 		var chain;
-		var reward = [mission.m_Rewards, mission.m_BonusRewards];
-		for (var type in reward){
-			for (var i in reward[type]) {
-				var itemID = reward[type][i];
+		var urgent;
+		var rewards:Array = [mission.m_Rewards, mission.m_BonusRewards];
+		for (var type = 0; type < rewards.length;type++){
+			for (var rewardSlot = 0; rewardSlot < rewards[type].length;rewardSlot++) {
+				var itemID = rewards[type][rewardSlot];
 				var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(itemID);
-				if (dAlertVanity.GetValue() && itemID == 9407816) {
+				if (dAlertVanity.GetValue() && itemID == 9407816 && 
+					(!dAlertOutstanding.GetValue() || Util.IsNotLast(rewardSlot,rewards,type)))
+				{
 					items.push(itemID);
 				}
-				else if (dAlertPurple.GetValue() && itemID == 9400616) {
+				else if (dAlertPurple.GetValue() && itemID == 9400616 && 
+					(!dAlertOutstanding.GetValue() || Util.IsNotLast(rewardSlot,rewards,type)))
+				{
 					items.push(itemID);
 				}
-				else if (dAlertBlue.GetValue() && itemID == 9400614) {
+				else if (dAlertBlue.GetValue() && itemID == 9400614 && 
+					(!dAlertOutstanding.GetValue() || Util.IsNotLast(rewardSlot,rewards,type)))
+				{
 					items.push(itemID);
 				}
 				else if (dAlertDossier.GetValue() &&
@@ -162,10 +203,18 @@ class com.fox.missionAlerts.Main {
 				}
 			}
 		}
+		if (dAlertUrgent.GetValue() && mission.m_Rarity == 170){
+			urgent = "Urgent";
+			if (items.length == 0){
+				urgent += ": "+mission.m_MissionName;
+			}else{
+				urgent += " + "
+			}
+		}
 		if (dAlertChain.GetValue()){
 			chain = Util.isNewChainMission(mission.m_MissionId, mission);
 		}
-		return[ret, items, chain];
+		return[ret, items, chain, urgent];
 	}
 
 }

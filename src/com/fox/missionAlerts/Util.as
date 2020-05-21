@@ -24,6 +24,9 @@ class com.fox.missionAlerts.Util {
 		if (Alert[2]){
 			ret += Alert[2];
 		}
+		if (Alert[3]){
+			ret += Alert[3];
+		}
 		for (var i in Alert[1]){
 			ret += CreateItemLink(Alert[1][i]);
 		}
@@ -47,6 +50,9 @@ class com.fox.missionAlerts.Util {
 		if (Alert[2]){
 			ret += Alert[2];
 		}
+		if (Alert[3]){
+			ret += Alert[3];
+		}
 		for (var i in Alert[1]){
 			ret += CreateColoredLink(Alert[1][i]);
 		}
@@ -54,35 +60,27 @@ class com.fox.missionAlerts.Util {
 	}
 	
 	// icon might not be loaded if this is called before topbar loads
-	static function SetIcon(data:Array, complete) {
+	static function SetIcon(data:Array, complete:Boolean) {
 		var container:MovieClip = _root.mainmenuwindow.m_AgentIconContainer;
 		if (!container) {
-			setTimeout(SetIcon, 500, data,complete);
+			setTimeout(SetIcon, 500, data, complete);
 			return
 		}
 		var icon:MovieClip = _root.mainmenuwindow.m_AgentIconContainer.m_AgentIcon;
-		/*
-		 * for testing,forces icon visibility
-		icon.enabled = true;
-		icon.gotoAndStop("urgent");
-		container._alpha = 100;
-		complete = true;
-		*/
+		var reload;
+		if (!icon.enabled){
+			reload = true;
+		}else{
+			container._alpha = 0;
+			icon.enabled = false;
+		}
+		
 		if (data.length > 0){
-			var reload:Boolean;
-			if (!icon.enabled){
-				reload = true;
-				icon.enabled = true;
-			}
-			var iconTransform:Transform = new Transform(  icon );
-			var iconColorTransform:ColorTransform = new ColorTransform();
-			iconColorTransform.rgb = 0x41F237; 
-			iconTransform.colorTransform = iconColorTransform;
 			container._alpha = 100;
-			
+			icon.enabled = true;
+			icon.gotoAndStop("urgent");
 			container.onRollOver =  function(){
-				if (this._visible && this._alpha > 0)
-				{
+				if (this._visible && this._alpha > 0){
 					var tooltipData:TooltipData = new TooltipData();
 					var desc:Array = []
 					for (var i in data){
@@ -92,28 +90,30 @@ class com.fox.missionAlerts.Util {
 					tooltipData.m_Padding = 4;
 					tooltipData.m_MaxWidth = 400;
 					tooltipData.m_Color = 0xFF8000;
-					tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.5.0</b></font>";
+					tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.6.0</b></font>";
 					
 					var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
 				  
 					this.m_Tooltip = TooltipManager.GetInstance().ShowTooltip( container, undefined, delay, tooltipData );
 				}
 			}
-			
 			container.onRollOut = function(){
 				if (this.m_Tooltip != undefined){
 					this.m_Tooltip.Close();
 					this.m_Tooltip = undefined;
 				}
 			}
-			if(reload)_root.mainmenuwindow.Layout();
-		} else if(icon.enabled) {
-			var iconTransform:Transform = new Transform(  icon );
-			var iconColorTransform:ColorTransform = new ColorTransform(); 
-			iconTransform.colorTransform = iconColorTransform;
 		}
-		if(complete && icon.enabled){
-			if (!container.m_CopyClip){
+		
+		if (complete){
+			// no alerts, just color default icon
+			if (!icon.enabled){
+				icon.enabled = true;
+				container._alpha = 100;
+				icon.gotoAndStop("complete");
+			}
+			// create sliced copy of the original and color it white
+			else if (!container.m_CopyClip){
 				var m_CopyClip:MovieClip = icon.duplicateMovieClip("m_CopyClip", container.getNextHighestDepth());
 				m_CopyClip.gotoAndStop("complete");
 				var iconTransform:Transform = new Transform(  m_CopyClip );
@@ -122,12 +122,18 @@ class com.fox.missionAlerts.Util {
 				m_CopyClip.setMask(null); //crashes without
 				com.GameInterface.ProjectUtils.SetMovieClipMask(m_CopyClip, container, icon._height, icon._width/2);
 			}
-			container.m_CopyClip._alpha = 100;
-		}else{
+			// make sliced copy visible if it already exists
+			else{
+				container.m_CopyClip._alpha = 100;
+			}
+		}
+		// hide sliced copy
+		else{
 			if (container.m_CopyClip){
 				container.m_CopyClip._alpha = 0;
 			}
 		}
+		if (icon.enabled && reload) _root.mainmenuwindow.Layout();
 	}
 	static function CalculateTimeString(timeLeft,name){
 		var time:Number = com.GameInterface.Utils.GetServerSyncedTime();
@@ -144,6 +150,7 @@ class com.fox.missionAlerts.Util {
 		if (minutesString.length == 1) { minutesString = "0" + minutesString; }
 		return hoursString + ":" + minutesString + ":" + secondsString;
 	}
+	
 	static function isActive(array, id) {
 		for (var i in array) {
 			if (array[i].m_MissionId == id) return true;
@@ -259,6 +266,14 @@ class com.fox.missionAlerts.Util {
 			default:
 				return;
 		}
-		
+	}
+	
+	// returns True if reward item is only item or not last
+	static function IsNotLast(slot:Number, rewards:Array, type:Number){
+		return type == 0 && 
+		(
+			(slot == 0) ||
+			(slot != rewards[type].length - 1)
+		);
 	}
 }
