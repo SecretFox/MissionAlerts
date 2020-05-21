@@ -90,7 +90,7 @@ class com.fox.missionAlerts.Util {
 					tooltipData.m_Padding = 4;
 					tooltipData.m_MaxWidth = 400;
 					tooltipData.m_Color = 0xFF8000;
-					tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.6.0</b></font>";
+					tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.6.2</b></font>";
 					
 					var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
 				  
@@ -270,10 +270,13 @@ class com.fox.missionAlerts.Util {
 	
 	// returns True if reward item is only item or not last
 	static function IsNotLast(slot:Number, rewards:Array, type:Number){
-		return type == 0 && 
+		return type == 1 ||
 		(
-			(slot == 0) ||
-			(slot != rewards[type].length - 1)
-		);
+			type == 0 &&
+			(
+				(slot == 0) ||
+				(slot != rewards[type].length - 1)
+			)
+		)
 	}
 }
