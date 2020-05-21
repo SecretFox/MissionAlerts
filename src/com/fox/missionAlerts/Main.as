@@ -175,8 +175,7 @@ class com.fox.missionAlerts.Main {
 			for (var rewardSlot = 0; rewardSlot < rewards[type].length;rewardSlot++) {
 				var itemID = rewards[type][rewardSlot];
 				var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(itemID);
-				if (dAlertVanity.GetValue() && itemID == 9407816 && 
-					(!dAlertOutstanding.GetValue() || Util.IsNotLast(rewardSlot,rewards,type)))
+				if (dAlertVanity.GetValue() && itemID == 9407816)
 				{
 					items.push(itemID);
 				}

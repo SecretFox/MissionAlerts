@@ -4,7 +4,7 @@ Alerts are shown as chat/fifo messages(configurable).
 Also changes agent icon color and adds a tooltip to it when missions are available.  
 
 ### Options  
-`/option MissionAlerts_IgnoreOutstanding true`[Default False], if enabled gear/vanity bags that require outstanding success get ignored.  
+`/option MissionAlerts_IgnoreOutstanding true`[Default False], if enabled gear bags that require outstanding success get ignored.  
 By default all of these are true, set to false to disable them.  
 `/option MissionAlerts_Urgent true` Enable urgent mission alerts  
 `/option MissionAlerts_Vanity true` Enable Vanity Bag alerts  
