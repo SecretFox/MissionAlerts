@@ -6,136 +6,166 @@ import com.GameInterface.InventoryItem;
 import com.GameInterface.LoreBase;
 import com.GameInterface.Tooltip.TooltipData;
 import com.GameInterface.Tooltip.TooltipManager;
+import com.GameInterface.UtilsBase;
 import com.Utils.Colors;
 import com.Utils.LDBFormat;
+import com.fox.missionAlerts.data.Alert;
 import flash.geom.ColorTransform;
 import flash.geom.Transform;
 /*
 * ...
 * @author fox
 */
-class com.fox.missionAlerts.Util {
-	
-	// Alert[0] == Tier string
-	// Alert[1] == ItemID array
-	// Alert[2] == ChainMission string
-	static function CreateChatFeedbackString(Alert:Array):String{
-		var ret:String = Alert[0];
-		if (Alert[2]){
-			ret += Alert[2];
+class com.fox.missionAlerts.Util
+{
+
+	static function CreateChatFeedbackString(alert:Alert):String
+	{
+		if (alert.specialMissionText) return alert.specialMissionText;
+		var ret:String = alert.missionTierText;
+		if (alert.chainText)
+		{
+			ret += alert.chainText;
 		}
-		if (Alert[3]){
-			ret += Alert[3];
+		if (alert.customText)
+		{
+			ret += alert.customText;
 		}
-		for (var i in Alert[1]){
-			ret += CreateItemLink(Alert[1][i]);
+		for (var i in alert.items)
+		{
+			ret += CreateItemLink(alert.items[i]);
 		}
 		return ret;
 	}
-	
-	static function CreateItemLink(itemID:Number):String{
+
+	static function CreateItemLink(itemID:Number):String
+	{
 		return "<a style=\"text-decoration:none\" href=\"itemref:// " +
-		itemID + 
+		itemID +
 		"/0/0/0/0/0/616e09b0:4dd8af57:3b929b98:cf0d4d11/b290805c:29e627ca:b290805c:29e627ca/b290805c:29e627ca:b290805c:29e627ca\">" +
 		CreateColoredLink(itemID)+"</a>"
 	}
-	
-	static function CreateColoredLink(itemID:Number):String{
+
+	static function CreateColoredLink(itemID:Number):String
+	{
 		var item:InventoryItem = InventoryBase.CreateACGItemFromTemplate(itemID);
 		return "<font color=\"" + Colors.ColorToHtml(Colors.GetItemRarityColor(item.m_Rarity)) + "\">[" + LDBFormat.LDBGetText(50200,itemID)+"]</font>"
 	}
-	
-	static function CreateFifoFeedbackString(Alert){
-		var ret:String = Alert[0];
-		if (Alert[2]){
-			ret += Alert[2];
+
+	static function CreateFifoFeedbackString(alert:Alert)
+	{
+		if (alert.specialMissionText) return alert.specialMissionText;
+		var ret:String = alert.missionTierText;
+		if (alert.chainText)
+		{
+			ret += alert.chainText;
 		}
-		if (Alert[3]){
-			ret += Alert[3];
+		if (alert.customText)
+		{
+			ret += alert.customText;
 		}
-		for (var i in Alert[1]){
-			ret += CreateColoredLink(Alert[1][i]);
+		for (var i in alert.items)
+		{
+			ret += CreateColoredLink(alert.items[i]);
 		}
 		return ret;
 	}
-	
+
 	// icon might not be loaded if this is called before topbar loads
-	static function SetIcon(data:Array, complete:Boolean) {
+	static function SetIcon(alerts:Array, complete:Boolean)
+	{
 		var container:MovieClip = _root.mainmenuwindow.m_AgentIconContainer;
-		if (!container) {
-			setTimeout(SetIcon, 500, data, complete);
+		if (!container)
+		{
+			setTimeout(SetIcon, 500, alerts, complete);
 			return
 		}
 		var icon:MovieClip = _root.mainmenuwindow.m_AgentIconContainer.m_AgentIcon;
 		var reload;
-		if (!icon.enabled){
+		if (!icon.enabled)
+		{
 			reload = true;
-		}else{
+		}
+		else
+		{
 			container._alpha = 0;
 			icon.enabled = false;
 		}
-		
-		if (data.length > 0){
+		if (alerts.length > 0)
+		{
 			container._alpha = 100;
 			icon.enabled = true;
 			icon.gotoAndStop("urgent");
-			container.onRollOver =  function(){
-				if (this._visible && this._alpha > 0){
+			container.onRollOver =  function()
+			{
+				if (this._visible && this._alpha > 0)
+				{
 					var tooltipData:TooltipData = new TooltipData();
 					var desc:Array = []
-					for (var i in data){
-						desc.push(Util.CreateFifoFeedbackString(data[i][1]) + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(data[i][0].m_MissionId),data[i][0].m_MissionName));
+									 for (var i in alerts)
+					{
+						desc.push(Util.CreateFifoFeedbackString(alerts[i]) + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(alerts[i].missionID), alerts[i].missionName));
 					}
 					tooltipData.AddDescription("<font size='11'>"+desc.join("\n")+"</font>");
 					tooltipData.m_Padding = 4;
 					tooltipData.m_MaxWidth = 400;
 					tooltipData.m_Color = 0xFF8000;
 					tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.6.2</b></font>";
-					
+
 					var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
-				  
+
 					this.m_Tooltip = TooltipManager.GetInstance().ShowTooltip( container, undefined, delay, tooltipData );
 				}
 			}
-			container.onRollOut = function(){
-				if (this.m_Tooltip != undefined){
+			container.onRollOut = function()
+			{
+				if (this.m_Tooltip != undefined)
+				{
 					this.m_Tooltip.Close();
 					this.m_Tooltip = undefined;
 				}
 			}
 		}
-		
-		if (complete){
+
+		if (complete)
+		{
 			// no alerts, just color default icon
-			if (!icon.enabled){
+			if (!icon.enabled)
+			{
 				icon.enabled = true;
 				container._alpha = 100;
 				icon.gotoAndStop("complete");
 			}
 			// create sliced copy of the original and color it white
-			else if (!container.m_CopyClip){
+			else if (!container.m_CopyClip)
+			{
 				var m_CopyClip:MovieClip = icon.duplicateMovieClip("m_CopyClip", container.getNextHighestDepth());
 				m_CopyClip.gotoAndStop("complete");
 				var iconTransform:Transform = new Transform(  m_CopyClip );
-				var iconColorTransform:ColorTransform = new ColorTransform(); 
+				var iconColorTransform:ColorTransform = new ColorTransform();
 				iconTransform.colorTransform = iconColorTransform;
 				m_CopyClip.setMask(null); //crashes without
 				com.GameInterface.ProjectUtils.SetMovieClipMask(m_CopyClip, container, icon._height, icon._width/2);
 			}
 			// make sliced copy visible if it already exists
-			else{
+			else
+			{
 				container.m_CopyClip._alpha = 100;
 			}
 		}
 		// hide sliced copy
-		else{
-			if (container.m_CopyClip){
+		else
+		{
+			if (container.m_CopyClip)
+			{
 				container.m_CopyClip._alpha = 0;
 			}
 		}
 		if (icon.enabled && reload) _root.mainmenuwindow.Layout();
 	}
-	static function CalculateTimeString(timeLeft,name){
+
+	static function CalculateTimeString(timeLeft,name)
+	{
 		var time:Number = com.GameInterface.Utils.GetServerSyncedTime();
 		timeLeft = timeLeft - time;
 		var totalMinutes = timeLeft/60;
@@ -150,16 +180,20 @@ class com.fox.missionAlerts.Util {
 		if (minutesString.length == 1) { minutesString = "0" + minutesString; }
 		return hoursString + ":" + minutesString + ":" + secondsString;
 	}
-	
-	static function isActive(array, id) {
-		for (var i in array) {
+
+	static function isActive(array, id)
+	{
+		for (var i in array)
+		{
 			if (array[i].m_MissionId == id) return true;
 		}
 	}
 
 	// itemID -> agentID
-	static function hasAgent(dossierID:Number) {
-		switch (dossierID) {
+	static function hasAgent(dossierID:Number)
+	{
+		switch (dossierID)
+		{
 			case 9399700:// virgil
 				return AgentSystem.HasAgent(223);
 			case 9399761:// sarah
@@ -177,8 +211,10 @@ class com.fox.missionAlerts.Util {
 		}
 	}
 
-	static function IsJeronimoItem(itemID:Number){
-		switch(itemID){
+	static function IsJeronimoItem(itemID:Number)
+	{
+		switch (itemID)
+		{
 			case 9455193:
 			case 9455194:
 			case 9455195:
@@ -189,14 +225,17 @@ class com.fox.missionAlerts.Util {
 	}
 
 	// Returns true if mission is part of uncompleted mission chain
-	static function isNewChainMission(id:Number, mission:AgentSystemMission) {
-		switch(id){
+	static function isNewChainMission(id:Number, mission:AgentSystemMission)
+	{
+		switch (id)
+		{
 			case 2781: // The Lost Conquistador
 			case 2782: // The Trail of the Conquistador
 			case 2783: // Chasing Jeronimo
 			case 2784: // Night of the Transdimensional Fish People
 			case 2785: // Courting the Conquistador
-				if (LoreBase.IsLocked(11060)) { // Achievement: A Man of Principle
+				if (LoreBase.IsLocked(11060))   // Achievement: A Man of Principle
+				{
 					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
@@ -205,7 +244,8 @@ class com.fox.missionAlerts.Util {
 			case 2788: // Expedition Into the Triangle
 			case 2789: // Attack of the Conquistador Cadavers
 			case 2790: // Mysteries of the Sphere
-				if (LoreBase.IsLocked(11061)) {
+				if (LoreBase.IsLocked(11061))
+				{
 					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
@@ -219,18 +259,20 @@ class com.fox.missionAlerts.Util {
 			case 2796: // Once Again Into Agartha
 			case 2797: // The Future is Now
 			case 2805: // The Future is Now
-				if (LoreBase.IsLocked(11062)) { // Achievements: Exploratory Cartographer
+				if (LoreBase.IsLocked(11062))   // Achievements: Exploratory Cartographer
+				{
 					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
-		
+
 			case 2806: // The Fungoid Mystery
 			case 2798: // The Fungoid Mystery
 			case 2799: // Spores from Beyond
 			case 2807: // Spores from Beyond
 			case 2808: // The Horror in Fungus
 			case 2800: // The Horror in Fungus
-				if (LoreBase.IsLocked(11063)) { // Achievements: Observing the Impossible
+				if (LoreBase.IsLocked(11063))   // Achievements: Observing the Impossible
+				{
 					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
@@ -239,7 +281,8 @@ class com.fox.missionAlerts.Util {
 			case 2811: // The Riddle of Dark Agartha
 			case 2812: // The Reluctant Conquistador
 			case 2813: // Again Into the Void
-				if (LoreBase.IsLocked(11064)) { // Achievements: Once More Unto the Void
+				if (LoreBase.IsLocked(11064))   // Achievements: Once More Unto the Void
+				{
 					return "Jerónimo: " + mission.m_MissionName;
 				}
 				return;
@@ -253,13 +296,15 @@ class com.fox.missionAlerts.Util {
 			case 351:
 			case 352:
 			case 353: // Dante's Devil
-				if (LoreBase.IsLocked(10735)){
+				if (LoreBase.IsLocked(10735))
+				{
 					return "Dante: " + mission.m_MissionName;
 				}
 				return;
 			case 373: // The Fountain of Youth
 			case 379: // Subterranean Lost and Found
-				if (LoreBase.IsLocked(10736)){
+				if (LoreBase.IsLocked(10736))
+				{
 					return "Guatemala: " + mission.m_MissionName;
 				}
 				return;
@@ -267,16 +312,36 @@ class com.fox.missionAlerts.Util {
 				return;
 		}
 	}
-	
+
 	// returns True if reward item is only item or not last
-	static function IsNotLast(slot:Number, rewards:Array, type:Number){
+	static function IsNotLast(slot:Number, rewards:Array, type:Number)
+	{
 		return type == 1 ||
-		(
-			type == 0 &&
-			(
-				(slot == 0) ||
-				(slot != rewards[type].length - 1)
-			)
-		)
+			   (
+				   type == 0 &&
+				   (
+					   (slot == 0) ||
+					   (slot != rewards[type].length - 1)
+				   )
+			   )
+	}
+
+	static function IsCustomAlert(ID:Number, Customs:Array)
+	{
+		for (var i in Customs)
+		{
+			if (Number(Customs[i]) == ID)
+			{
+				UtilsBase.PrintChatText("id match " + ID);
+				return true;
+			}
+			var data:Array = Customs[i].split(",");
+			if (data.length >= 1)
+			{
+				var id = data[0];
+				var note = data[1];
+				if (Number(id) == ID) return note;
+			}
+		}
 	}
 }
