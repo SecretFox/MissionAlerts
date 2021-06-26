@@ -101,19 +101,19 @@ class com.fox.missionAlerts.Util
 				if (this._visible && this._alpha > 0)
 				{
 					var tooltipData:TooltipData = new TooltipData();
-					var desc:Array = []
-									 for (var i in alerts)
+					var desc:Array = [];
+					for (var i in alerts)
 					{
-						desc.push(Util.CreateFifoFeedbackString(alerts[i]) + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(alerts[i].missionID), alerts[i].missionName));
+						var alert:Alert = alerts[i];
+						var content = Util.CreateFifoFeedbackString(alert) + " " + Util.CalculateTimeString(AgentSystem.GetMissionRefreshTime(alert.missionID), alert.missionName)
+						desc.push(content);
 					}
 					tooltipData.AddDescription("<font size='11'>"+desc.join("\n")+"</font>");
 					tooltipData.m_Padding = 4;
 					tooltipData.m_MaxWidth = 400;
 					tooltipData.m_Color = 0xFF8000;
 					tooltipData.m_Title = "<font size='14'><b>MissionAlerts v0.6.2</b></font>";
-
 					var delay:Number = DistributedValue.GetDValue("HoverInfoShowDelay");
-
 					this.m_Tooltip = TooltipManager.GetInstance().ShowTooltip( container, undefined, delay, tooltipData );
 				}
 			}
@@ -332,7 +332,6 @@ class com.fox.missionAlerts.Util
 		{
 			if (Number(Customs[i]) == ID)
 			{
-				UtilsBase.PrintChatText("id match " + ID);
 				return true;
 			}
 			var data:Array = Customs[i].split(",");
